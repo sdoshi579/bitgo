@@ -12,6 +12,7 @@ type Service interface {
 	CreateNotification(ctx context.Context, notification entity.Notification) (*entity.Notification, error)
 	GetNotifications(ctx context.Context, status *value_objects.Status) ([]entity.Notification, error)
 	DeleteNotification(ctx context.Context, id uuid.UUID) (bool, error)
+	UpdateStatus(ctx context.Context, id uuid.UUID, status value_objects.Status) (*entity.Notification, error)
 }
 
 type serviceImplementation struct {
@@ -34,4 +35,8 @@ func (s *serviceImplementation) GetNotifications(ctx context.Context, status *va
 
 func (s *serviceImplementation) DeleteNotification(ctx context.Context, id uuid.UUID) (bool, error) {
 	return s.repository.DeleteNotification(ctx, id)
+}
+
+func (s *serviceImplementation) UpdateStatus(ctx context.Context, id uuid.UUID, status value_objects.Status) (*entity.Notification, error) {
+	return s.repository.UpdateStatus(ctx, id, status)
 }

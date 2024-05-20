@@ -13,6 +13,7 @@ type Repository interface {
 	CreateNotification(ctx context.Context, notification entity.Notification) (*entity.Notification, error)
 	GetNotifications(ctx context.Context, status *value_objects.Status) ([]entity.Notification, error)
 	DeleteNotification(ctx context.Context, id uuid.UUID) (bool, error)
+	UpdateStatus(ctx context.Context, id uuid.UUID, status value_objects.Status) (*entity.Notification, error)
 }
 
 type repository struct {
@@ -54,4 +55,14 @@ func (r *repository) DeleteNotification(ctx context.Context, id uuid.UUID) (bool
 	}
 
 	return false, fmt.Errorf("error in deleting notification: %s", id.String())
+}
+
+func (r *repository) UpdateStatus(ctx context.Context, id uuid.UUID, status value_objects.Status) (*entity.Notification, error) {
+	if n, ok := r.db[id]; ok {
+		n.Status = status
+		r.db[id] = n
+		return &n, nil
+	}
+
+	return nil, fmt.Errorf("error in deleting notification: %s", id.String())
 }

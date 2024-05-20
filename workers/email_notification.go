@@ -38,9 +38,12 @@ func (e *emailNotification) Run(ctx context.Context) error {
 				continue
 			}
 			for _, n := range notifications {
-				if err := e.emailClient.SendEmail(ctx, n.UserID.String(), "notification triggered"); err != nil {
+				if err := e.emailClient.SendEmail(ctx, n.ID.String(), "notification triggered"); err != nil {
 					fmt.Println("error in sending mail: ", err)
+					e.notificationService.UpdateStatus(ctx, n.ID, value_objects.StatusFailed) // TODO: log error
+					continue
 				}
+				e.notificationService.UpdateStatus(ctx, n.ID, value_objects.StatusSent) // TODO: log error
 			}
 		}
 	}

@@ -30,9 +30,12 @@ curl --location --request DELETE 'localhost:8081/0b27dbbd-bede-4c45-8605-3f45e2d
 
 ## TODOs:
 
-1. worker status update in db post sending mail
+1. worker status update in db post sending mail (Done)
 2. Worker can be observer pattern based on some param
 3. Worker main.go can be another server independent
+4. Common handler function which add header
+5. Common error interface so that can have http status specific to error
+6. Do soft delete instead of deleting from map
 
 
 ## Steps to run:
