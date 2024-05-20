@@ -1,9 +1,14 @@
 package main
 
 import (
+	"context"
+	"fmt"
+	"github.com/gorilla/mux"
 	"github.com/sodhi579/bitgo/api/notification"
 	repository2 "github.com/sodhi579/bitgo/app/notification/repository"
 	service2 "github.com/sodhi579/bitgo/app/notification/service"
+	"github.com/sodhi579/bitgo/clients/email"
+	"github.com/sodhi579/bitgo/workers"
 	"log"
 	"net/http"
 )
@@ -25,8 +30,19 @@ func main() {
 
 	//http.ListenAndServe(listener, )
 
-	http.HandleFunc("/", notificationHandler.CreateNotification)
-	http.HandleFunc("/get", notificationHandler.GetNotification)
+	r := mux.NewRouter()
+	r.HandleFunc("/", notificationHandler.CreateNotification).Methods(http.MethodPost)
+	r.HandleFunc("/", notificationHandler.GetNotification).Methods(http.MethodGet)
+	r.HandleFunc("/{id}", notificationHandler.DeleteNotification).Methods(http.MethodDelete)
 
+	http.Handle("/", r)
+
+	emailClient := email.NewEmailClient()
+	w := workers.NewEmailWorker(service, emailClient)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	go w.Run(ctx)
+	fmt.Println("worker started")
 	log.Fatal(http.ListenAndServe(":8081", nil))
+	cancel()
 }

@@ -13,5 +13,5 @@ type Notification struct {
 	IntraDayHighPrice float64
 	MarketCap         float64
 	Status            value_objects.Status
-	IsDeleted         bool
+	IsDeleted         bool `json:"-"` // omit in response to user as they should not see this flag
 }

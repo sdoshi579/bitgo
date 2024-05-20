@@ -12,5 +12,4 @@ type CreateNotificationRequest struct {
 	IntraDayHighPrice float64
 	MarketCap         float64
 	Status            value_objects.Status
-	IsDeleted         bool
 }

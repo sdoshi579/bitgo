@@ -2,6 +2,8 @@ package notification
 
 import (
 	"encoding/json"
+	"github.com/google/uuid"
+	"github.com/gorilla/mux"
 	"github.com/sodhi579/bitgo/api/notification/models"
 	"github.com/sodhi579/bitgo/app/notification/entity"
 	"github.com/sodhi579/bitgo/app/notification/service"
@@ -19,21 +21,28 @@ func (h *Handler) CreateNotification(w http.ResponseWriter, req *http.Request) {
 
 	payload, err := io.ReadAll(req.Body)
 	if err != nil {
+		w.Header().Set("content-type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(err.Error()))
 		return
 	}
 	if err := json.Unmarshal(payload, &request); err != nil {
+		w.Header().Set("content-type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(err.Error()))
 		return
 	}
 
 	resp, err := h.NotificationService.CreateNotification(req.Context(), entity.Notification{
-		UserID: request.UserID,
-		Status: request.Status,
+		UserID:            request.UserID,
+		CurrentPrice:      request.CurrentPrice,
+		Volume:            request.Volume,
+		MarketCap:         request.MarketCap,
+		IntraDayHighPrice: request.IntraDayHighPrice,
+		Status:            request.Status,
 	})
 	if err != nil {
+		w.Header().Set("content-type", "application/json")
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(err.Error()))
 		return
@@ -41,25 +50,26 @@ func (h *Handler) CreateNotification(w http.ResponseWriter, req *http.Request) {
 
 	bytesResponse, err := json.Marshal(resp)
 	if err != nil {
+		w.Header().Set("content-type", "application/json")
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(err.Error()))
 		return
 	}
+	w.Header().Set("content-type", "application/json")
 	w.Write(bytesResponse)
 }
 
 func (h *Handler) GetNotification(w http.ResponseWriter, req *http.Request) {
 	status := req.URL.Query().Get("status")
 
-	var resp []entity.Notification
-	var err error
-	if status == "" {
-		resp, err = h.NotificationService.GetNotifications(req.Context(), nil)
-	} else {
-		statusEnum := value_objects.GetStatusEnum(status)
-		resp, err = h.NotificationService.GetNotifications(req.Context(), &statusEnum)
+	var statusEnum *value_objects.Status
+	if status != "" {
+		innerStatus := value_objects.GetStatusEnum(status)
+		statusEnum = &innerStatus
 	}
+	resp, err := h.NotificationService.GetNotifications(req.Context(), statusEnum)
 	if err != nil {
+		w.Header().Set("content-type", "application/json")
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(err.Error()))
 		return
@@ -67,9 +77,31 @@ func (h *Handler) GetNotification(w http.ResponseWriter, req *http.Request) {
 
 	bytesResponse, err := json.Marshal(resp)
 	if err != nil {
+		w.Header().Set("content-type", "application/json")
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(err.Error()))
 		return
 	}
+	w.Header().Set("content-type", "application/json")
 	w.Write(bytesResponse)
+}
+
+func (h *Handler) DeleteNotification(w http.ResponseWriter, req *http.Request) {
+	notificationID := mux.Vars(req)["id"]
+
+	notificationUUID, err := uuid.Parse(notificationID)
+	if err != nil {
+		w.Header().Set("content-type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(err.Error()))
+		return
+	}
+	_, err = h.NotificationService.DeleteNotification(req.Context(), notificationUUID)
+	if err != nil {
+		w.Header().Set("content-type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(err.Error()))
+		return
+	}
+	w.Header().Set("content-type", "application/json")
 }
