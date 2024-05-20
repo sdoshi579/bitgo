@@ -17,6 +17,7 @@ curl --location 'localhost:8081' \
 
 ### Create Notification
 send status empty or not to fetch all notifications
+status values can be "Outstanding", "Sent", "Failed"
 ```
 curl --location 'localhost:8081?status=Failed' \
 --data ''
@@ -36,10 +37,12 @@ curl --location --request DELETE 'localhost:8081/0b27dbbd-bede-4c45-8605-3f45e2d
 4. Common handler function which add header
 5. Common error interface so that can have http status specific to error
 6. Do soft delete instead of deleting from map
+7. Pagination in get apis
+8. Return empty array in get response if no notifications found
 
 
 ## Steps to run:
 
-```azure
+```
 go run cmd/server/main.go
 ```
